@@ -410,12 +410,13 @@ class SPARQLUpdateStore(SPARQLStore):
     def __init__(self,
                  queryEndpoint=None, update_endpoint=None,
                  bNodeAsURI=False, sparql11=True,
-                 context_aware=True):
+                 context_aware=True,virtuoso=False):
 
         SPARQLStore.__init__(self,
                              queryEndpoint, bNodeAsURI, sparql11, context_aware)
 
         self.connection = None
+	self.virtuoso = virtuoso
         if update_endpoint:
             self.update_endpoint = update_endpoint
 
@@ -555,7 +556,10 @@ class SPARQLUpdateStore(SPARQLStore):
 
     def _do_update(self, update):
         import urllib
-        update = urllib.urlencode({'update': update})
+	if self.virtuoso:
+		update = urllib.urlencode({'query': update})
+        else:
+        	update = urllib.urlencode({'update': update})
         self.connection.request(
             'POST', self.path, update.encode("utf-8"), self.headers)
         return self.connection.getresponse()
